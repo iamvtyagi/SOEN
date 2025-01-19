@@ -2,13 +2,16 @@ import express from "express";
 import morgan from "morgan";
 import connectToMongoDB from "./db/db.js";
 import userRoutes from "./routes/user.route.js";
+import projectRoutes from "./routes/project.route.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 connectToMongoDB();
 
 
 const app = express();
 
+app.use(cors());
 app.use(morgan("dev"));
 app.use(cookieParser());
 
@@ -21,5 +24,6 @@ app.get("/", (req, res) => {
 });
 
 app.use("/users", userRoutes);
+app.use("/projects", projectRoutes);
 
 export default app;
