@@ -11,8 +11,6 @@ const Home = () => {
 
     function createProject(e) {
          e.preventDefault();
-        //  setisModalOpen(false);
-        //  setprojectName('');
         axios.post('/projects/create', 
             {
                 name: projectName
@@ -22,6 +20,8 @@ const Home = () => {
                 console.log(err);
             })
          console.log("project name", projectName);
+         setisModalOpen(false);
+         setprojectName('');
 
     }
 

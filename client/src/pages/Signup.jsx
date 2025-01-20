@@ -8,6 +8,7 @@ const Signup = () => {
     email: '',
     password: ''
   });
+  const { setUser } = useContext(UserDataContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
