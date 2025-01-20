@@ -1,5 +1,5 @@
 import projectModel from "../models/project.model.js";
-import {createProject} from "../services/project.service.js";
+import {createProject, getAllProjectsByUserId} from "../services/project.service.js";
 import { validationResult } from "express-validator";
 import userModel from "../models/user.model.js";
 
@@ -21,4 +21,30 @@ export const createProjectController = async (req, res) => {
   }
 
 
+}
+
+export const getAllProjectsController = async (req, res) => {
+    try{
+
+      const loggedInuser = await userModel.findOne({email: req.user.email});
+
+      const allUserProjectets = await  getAllProjectsByUserId(loggedInuser._id);
+
+      return res.status(200).json({projects: allUserProjectets});
+
+
+    }catch(err){
+      console.log(err);
+      res.status(400).json({error: err.message});
+    }
+
+}
+
+export const addUserToProjectController = async (req,res) =>{
+     try{
+         
+     }catch(err){
+         console.log(err);
+         res.status(400).json({error: err.message});
+     }
 }

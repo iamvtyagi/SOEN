@@ -9,3 +9,10 @@ export const createProject = async ({
     await project.save();
     return project;
 }
+
+export const getAllProjectsByUserId = async (userId) =>  {
+    if(!userId) throw new Error("userId is required");
+
+    const allUserProjects = await projectModel.find({ users: userId });
+    return allUserProjects;
+} 
