@@ -20,7 +20,6 @@ export const createProjectController = async (req, res) => {
     res.status(500).json({error: err.message});
   }
 
-
 }
 
 export const getAllProjectsController = async (req, res) => {
@@ -41,7 +40,13 @@ export const getAllProjectsController = async (req, res) => {
 }
 
 export const addUserToProjectController = async (req,res) =>{
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+  }
      try{
+
+      
          
      }catch(err){
          console.log(err);

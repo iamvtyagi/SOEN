@@ -22,7 +22,6 @@ const Home = () => {
          console.log("project name", projectName);
          setisModalOpen(false);
          setprojectName('');
-
     }
 
   return (
