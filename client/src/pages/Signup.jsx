@@ -22,7 +22,7 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     axios.post('/users/register', formData).then((res) => {
-        console.log(res);
+        // console.log(res);
         setUser(res.data.user);
         navigate('/');
     }).catch((err) => {

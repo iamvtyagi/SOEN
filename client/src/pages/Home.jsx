@@ -1,5 +1,6 @@
-import {React, useContext, useState} from 'react'
+import {React, useContext, useState, useEffect} from 'react'
 import { UserDataContext } from '../context/User.context'
+import {Link,useNavigate} from 'react-router-dom'
 import axios from '../config/axios.js'
 
 const Home = () => {
@@ -8,14 +9,21 @@ const Home = () => {
 
     const { user, setUser } = useContext(UserDataContext);
     const [projectName, setprojectName] = useState('');
+    const [project, setproject] = useState([])
+
+    const navigate = useNavigate()
+
+
 
     function createProject(e) {
          e.preventDefault();
-        axios.post('/projects/create', 
+        //  console.log(user);
+         
+        axios.post('/projects/create',
             {
                 name: projectName
             }).then((res) => {
-                console.log(res);
+                // console.log(res);
             }).catch((err) => {
                 console.log(err);
             })
@@ -24,12 +32,45 @@ const Home = () => {
          setprojectName('');
     }
 
+    useEffect(()=>{
+       axios.get('/projects/all')
+       .then((res)=>{
+        // console.log(res.data)
+        setproject(res.data.projects)
+       }).catch((err)=>{
+        console.log(err)
+       })
+    },[])
+
   return (
     <main className="p-4">
-        <div className='projects'>
+        <div className='projects flex flex-wrap gap-3'>
             <button onClick={() => setisModalOpen(true)} className='project p-4 border border-slate-400 rounded-md'>
                  Create a new project <i className="ri-link"></i>
             </button>
+     
+     {
+      project.map((project)=>(
+         
+        <div onClick={() => {
+          navigate('/project',{
+            state : {project}
+          }
+          )
+        }}
+        
+        key={project._id}  className='project items-center justify-center hover:bg-red-400 p-4 flex flex-col cursor-pointer border min-w-56 border-slate-400 rounded-md'>
+           <p  className='text-bold' >projectName : {project.name}</p>
+            {/* <i className='ri-link ml-2'></i> */}
+
+            <div className='flex gap-1'>
+            <p>collaborator <i className="ri-user-line bold"></i> :</p>
+              <h2>{project.users.length}</h2>
+            </div>
+        </div>
+      ))
+     }
+
         </div>
 
         {isModalOpen && (

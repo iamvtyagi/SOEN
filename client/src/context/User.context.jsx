@@ -1,7 +1,7 @@
 import { createContext, useState } from "react";
 export const UserDataContext = createContext();
 
-export const UserProvider = ({ children }) => {
+const UserProvider = ({ children }) => {
   const [user, setUser] = useState({email: "", password: ""});
 
 //   const login = (userData) => {

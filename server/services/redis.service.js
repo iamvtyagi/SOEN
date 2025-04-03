@@ -1,7 +1,6 @@
 import Redis from "ioredis";
 
 
-
 // redis connect ke liye or ye sari info database ke public endpoint mei hai 
 const redisClient = new Redis({
     host: process.env.REDIS_HOST,

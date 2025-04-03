@@ -30,7 +30,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await axios.post('/users/login', formData);
-      console.log(res);
+      // console.log(res);
       toast('🦄 Wow You Logged In!', {
         position: "top-right",
         autoClose: 5000,
