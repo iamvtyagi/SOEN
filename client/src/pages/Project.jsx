@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from "react";
 import axios from "../config/axios.js";
 import { useLocation } from "react-router-dom";
+import { initializeSocket , receiveMessage , sendMessage } from "../config/socket";
 
 const Project = () => {
   const location = useLocation();
 
+  // Added fallback for missing project data.
+  if (!location.state || !location.state.project) {
+    return <div>Error: Missing project data.</div>;
+  }
+
   const [isSideOpen, setisSideOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState([]);
-  const [project, setproject] = useState(location.state.project);
+  // Use optional chaining to safely initialize project state.
+  const [project, setproject] = useState(location.state?.project);
 
-  console.log(selectedUserId);
+  // console.log(selectedUserId);
 
   const [users, setUsers] = useState([]);
 
   // console.log(location.state);
   // console.log(Array.isArray(selectedUserId))
 
-  console.log("location is :", location);
+  // console.log("location is :", location);
 
   function addCollaborator() {
     axios
@@ -26,7 +33,7 @@ const Project = () => {
         users: selectedUserId,
       })
       .then((res) => {
-        console.log(res.data);
+        // console.log(res.data);
         setIsModalOpen(false);
       })
       .catch((err) => {
@@ -35,11 +42,13 @@ const Project = () => {
   }
 
   useEffect(() => {
+    initializeSocket();
+
     axios
       .get(`projects/get-project/${location.state.project._id}`)
       .then((res) => {
         setproject(res.data);
-        console.log("project details :", res.data);
+        // console.log("project details :", res.data);
       });
 
     axios.post("/users/all").then((res) => {
