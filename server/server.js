@@ -16,16 +16,14 @@ const io = new Server(server, {
   },
 });
 
-
-app.use(
-  cors({
-      origin: (_, callback) => {
-          callback(null, true); // Allow all origins
-      },
-      credentials: true,
-  })
-);
-
+// app.use(
+//   cors({
+//     origin: (_, callback) => {
+//       callback(null, true); // Allow all origins
+//     },
+//     credentials: true,
+//   })
+// );
 
 io.use(async (socket, next) => {
   try {
