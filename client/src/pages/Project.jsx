@@ -7,6 +7,8 @@ import {
   sendMessage,
 } from "../config/socket";
 import { UserDataContext } from "../context/User.context.jsx";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Project = () => {
   const location = useLocation();
@@ -98,6 +100,40 @@ const Project = () => {
     messageBox.scrollTop = messageBox.scrollHeight;
   }
 
+  // Function to fetch recent messages from the API
+  const fetchRecentMessages = async (projectId) => {
+    try {
+      const response = await axios.get(`/messages/room/${projectId}`);
+      const messages = response.data.messages;
+
+      // Clear existing messages
+      const messageBox = document.querySelector(".messageBox");
+      if (messageBox) {
+        messageBox.innerHTML = "";
+      }
+
+      // Render each message
+      if (Array.isArray(messages) && messages.length > 0) {
+        messages.forEach((msg) => {
+          if (msg.senderId === user._id) {
+            appendOutgoingMessage({
+              message: msg.message,
+              senderEmail: msg.senderEmail,
+            });
+          } else {
+            appendIncomingMessage({
+              message: msg.message,
+              senderEmail: msg.senderEmail,
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      toast.error("Failed to load message history");
+    }
+  };
+
   useEffect(() => {
     initializeSocket(project._id);
 
@@ -106,6 +142,7 @@ const Project = () => {
       appendIncomingMessage(data);
     });
 
+    // Fetch project details
     axios
       .get(`projects/get-project/${location.state.project._id}`)
       .then((res) => {
@@ -113,10 +150,14 @@ const Project = () => {
         // console.log("project details :", res.data);
       });
 
+    // Fetch all users
     axios.post("/users/all").then((res) => {
       setUsers(res.data);
     });
-  }, [location.state.project._id]);
+
+    // Fetch recent messages
+    fetchRecentMessages(project._id);
+  }, [location.state.project._id, user?._id]);
 
   const toggleUserSelection = (userId) => {
     setSelectedUserId(
@@ -154,6 +195,7 @@ const Project = () => {
 
   return (
     <main className="h-screen w-screen flex">
+      <ToastContainer position="top-right" autoClose={3000} />
       <section className="left relative h-screen flex flex-col min-w-96 bg-red-300">
         <header className="flex items-center justify-between p-2 px-4 w-full bg-slate-200">
           <div className="flex gap-4 items-center">
@@ -164,7 +206,9 @@ const Project = () => {
               <i className="ri-add-line"></i>
               <p>Add Collaborator</p>
             </button>
-            <h2 className="font-semibold text-lg">{project?.projectDetails?.name}</h2>
+            <h2 className="font-semibold text-lg">
+              {project?.projectDetails?.name}
+            </h2>
           </div>
 
           <button className="p-2" onClick={() => setisSideOpen(!isSideOpen)}>

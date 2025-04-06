@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import ProjectModel from "./models/project.model.js";
 import User from "./models/user.model.js";
-import { decode } from "punycode";
+import { saveMessage } from "./services/message.service.js";
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -55,15 +55,27 @@ io.on("connection", (socket) => {
   socket.join(socket.project._id.toString());
 
   socket.on("project-message", async (data) => {
-    const sender = await User.findById(data.sender);
-    const messageWithEmail = {
-      ...data,
-      senderEmail: sender.email,
-    };
+    try {
+      const sender = await User.findById(data.sender);
 
-    socket.broadcast
-      .to(socket.project._id.toString())
-      .emit("project-message", messageWithEmail);
+      // Save the message to the database with encryption
+      await saveMessage({
+        roomId: socket.project._id,
+        senderId: data.sender,
+        message: data.message,
+      });
+
+      const messageWithEmail = {
+        ...data,
+        senderEmail: sender.email,
+      };
+
+      socket.broadcast
+        .to(socket.project._id.toString())
+        .emit("project-message", messageWithEmail);
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
   });
 
   socket.on("event", (data) => {
