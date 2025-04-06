@@ -1,10 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "../config/axios.js";
 import { useLocation } from "react-router-dom";
-import { initializeSocket , receiveMessage , sendMessage } from "../config/socket";
+import {
+  initializeSocket,
+  receiveMessage,
+  sendMessage,
+} from "../config/socket";
+import { UserDataContext } from "../context/User.context.jsx";
 
 const Project = () => {
   const location = useLocation();
+
+  // console.log("location : " , location)
 
   // Added fallback for missing project data.
   if (!location.state || !location.state.project) {
@@ -14,8 +21,14 @@ const Project = () => {
   const [isSideOpen, setisSideOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState([]);
+  const [message, setMessage] = useState("");
   // Use optional chaining to safely initialize project state.
   const [project, setproject] = useState(location.state?.project);
+  const messageBox = React.createRef();
+
+  const { user } = useContext(UserDataContext);
+
+  // console.log(user)
 
   // console.log(selectedUserId);
 
@@ -41,8 +54,57 @@ const Project = () => {
       });
   }
 
+  const send = (e) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+
+    // Send message to socket
+    sendMessage("project-message", {
+      message,
+      sender: user._id,
+    });
+
+    // Append outgoing message immediately
+    appendOutgoingMessage({
+      message,
+      senderEmail: user.email,
+    });
+
+    setMessage("");
+  };
+
+  function appendOutgoingMessage(messageObject) {
+    const messageBox = document.querySelector(".messageBox");
+
+    const message = document.createElement("div");
+    message.classList.add(
+      "message",
+      "max-w-56",
+      "flex",
+      "flex-col",
+      "p-2",
+      "bg-blue-200",
+      "rounded-md",
+      "ml-auto"
+    );
+
+    message.innerHTML = `
+      <small class="opacity-65 text-xs">${messageObject.senderEmail}</small>
+      <p class="text-sm">${messageObject.message}</p>
+    `;
+
+    message.style.marginBottom = "8px";
+    messageBox.appendChild(message);
+    messageBox.scrollTop = messageBox.scrollHeight;
+  }
+
   useEffect(() => {
-    initializeSocket();
+    initializeSocket(project._id);
+
+    receiveMessage("project-message", (data) => {
+      console.log(data);
+      appendIncomingMessage(data);
+    });
 
     axios
       .get(`projects/get-project/${location.state.project._id}`)
@@ -65,17 +127,45 @@ const Project = () => {
     );
   };
 
+  function appendIncomingMessage(messageObject) {
+    const messageBox = document.querySelector(".messageBox");
+
+    const message = document.createElement("div");
+    message.classList.add(
+      "message",
+      "max-w-56",
+      "flex",
+      "flex-col",
+      "p-2",
+      "bg-slate-300",
+      "rounded-md"
+    );
+
+    message.innerHTML = `
+      <small class="opacity-65 text-xs">${messageObject.senderEmail}</small>
+      <p class="text-sm">${messageObject.message}</p>
+    `;
+
+    message.style.marginBottom = "8px";
+    messageBox.appendChild(message);
+
+    messageBox.scrollTop = messageBox.scrollHeight;
+  }
+
   return (
     <main className="h-screen w-screen flex">
       <section className="left relative h-screen flex flex-col min-w-96 bg-red-300">
-        <header className="flex justify-between p-2 px-4 w-full bg-slate-200">
-          <button
-            className="flex gap-2 items-center"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <i className="ri-add-line"></i>
-            <p>Add Collaborator</p>
-          </button>
+        <header className="flex items-center justify-between p-2 px-4 w-full bg-slate-200">
+          <div className="flex gap-4 items-center">
+            <button
+              className="flex gap-2 items-center"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <i className="ri-add-line"></i>
+              <p>Add Collaborator</p>
+            </button>
+            <h2 className="font-semibold text-lg">{project?.projectDetails?.name}</h2>
+          </div>
 
           <button className="p-2" onClick={() => setisSideOpen(!isSideOpen)}>
             <i className="ri-group-line"></i>
@@ -83,33 +173,27 @@ const Project = () => {
         </header>
 
         <div className="conversationArea flex-grow flex flex-col">
-          <div className="messageBox p-1 flex-grow flex flex-col gap-1">
-            <div className="incomingMsg border rounded-md flex max-w-64 flex-col p-2 px-4 bg-blue-200 w-fit gap-1">
-              <small className="opacity-45 text-sm">example@gmail.com</small>
-              <p className="text-sm">
-                Lorem ipsum dolor sit Lorem ipsum dolor sit amet. amet.
-              </p>
-            </div>
-
-            <div className="ml-auto Msg flex max-w-64 rounded-md flex-col p-2 px-4 bg-blue-200 w-fit gap-1">
-              <small className="opacity-45 text-sm">example@gmail.com</small>
-              <p className="text-sm">
-                Lorem ipsum dolor sit Lorem ipsum dolor sit amet consectetur
-                adipisicing elit. Fuga, consequatur. amet.
-              </p>
-            </div>
+          <div
+            ref={messageBox}
+            className="messageBox p-1 flex-grow flex flex-col gap-1 overflow-y-auto"
+          >
+            {/* Messages will be dynamically added here */}
           </div>
 
-          <div className="inputField w-full flex">
+          <form onSubmit={send} className="inputField w-full flex">
             <input
-              className="py-3 px-4 border-none w-4/5 outline-none"
+              className="py-3 px-4 border-none w-4/5 outline-none "
+              value={message}
+              onChange={(e) => {
+                setMessage(e.target.value);
+              }}
               type="text"
-              placeholder="Enter message"
+              placeholder="Enter message "
             />
             <button className="flex-grow bg-blue-700">
               <i className="ri-send-plane-2-fill"></i>
             </button>
-          </div>
+          </form>
         </div>
 
         <div

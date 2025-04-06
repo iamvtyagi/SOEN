@@ -1,35 +1,34 @@
-import { useState,useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import axios from '../config/axios.js';
-import { UserDataContext } from '../context/User.context';
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "../config/axios.js";
+import { UserDataContext } from "../context/User.context";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const { setUser } = useContext(UserDataContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    axios.post('/users/register', formData).then((res) => {
-        // console.log(res);
-        setUser(res.data.user);
-        navigate('/');
-    }).catch((err) => {
-        console.log(err);
-    })
-    // Add your registration logic here
-    console.log('Registration attempt with:', formData);
+    try {
+      const res = await axios.post("/users/register", formData);
+      setUser(res.data.user);
+      localStorage.setItem("token", res.data.token);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -38,7 +37,10 @@ const Signup = () => {
         <h2 className="text-3xl font-bold mb-6 text-white">Create Account</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-400">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-400"
+            >
               Email
             </label>
             <input
@@ -53,7 +55,10 @@ const Signup = () => {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-400">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-400"
+            >
               Password
             </label>
             <input
@@ -75,7 +80,7 @@ const Signup = () => {
           </button>
         </form>
         <p className="mt-4 text-center text-gray-400">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link to="/login" className="text-blue-500 hover:text-blue-400">
             Login here
           </Link>
