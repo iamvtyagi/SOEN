@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import ProjectModel from "./models/project.model.js";
 import User from "./models/user.model.js";
 import { saveMessage } from "./services/message.service.js";
+import cors from "cors";
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -14,6 +15,17 @@ const io = new Server(server, {
     origin: "*",
   },
 });
+
+
+app.use(
+  cors({
+      origin: (_, callback) => {
+          callback(null, true); // Allow all origins
+      },
+      credentials: true,
+  })
+);
+
 
 io.use(async (socket, next) => {
   try {
